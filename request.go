@@ -21,48 +21,35 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"io/ioutil"
 	"net/http"
 )
 
 // ParseJSON parses request body into v as json format.
 func ParseJSON(req *http.Request, v interface{}) error {
-	data, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(data, v)
-	return err
+	return json.NewDecoder(req.Body).Decode(v)
 }
 
 // ParseXML parses request body into v as xml format.
 func ParseXML(req *http.Request, v interface{}) error {
-	data, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return err
-	}
-	err = xml.Unmarshal(data, v)
-	return err
+	return xml.NewDecoder(req.Body).Decode(v)
 }
 
 // PostJSON sends post request to the url with v in json format
 func PostJSON(url string, v interface{}) (*http.Response, error) {
-	data, err := json.Marshal(v)
-	if err != nil {
+	buffer := bytes.NewBuffer([]byte{})
+	if err := json.NewEncoder(buffer).Encode(v); err != nil {
 		return nil, err
 	}
-	buffer := bytes.NewBuffer(data)
 	resp, err := http.Post(url, "application/json; charset=utf-8", buffer)
 	return resp, err
 }
 
 // PostXML sends post request to the url with v in xml format
 func PostXML(url string, v interface{}) (*http.Response, error) {
-	data, err := xml.Marshal(v)
-	if err != nil {
+	buffer := bytes.NewBuffer([]byte{})
+	if err := xml.NewEncoder(buffer).Encode(v); err != nil {
 		return nil, err
 	}
-	buffer := bytes.NewBuffer(data)
 	resp, err := http.Post(url, "application/json; charset=utf-8", buffer)
 	return resp, err
 }
